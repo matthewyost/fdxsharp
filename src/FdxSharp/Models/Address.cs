@@ -2,54 +2,57 @@
 
 namespace FdxSharp.Models
 {
+	/// <summary>
+ 	/// Represents an Address.
+  	/// </summary>
 	public class Address
 	{
 		/// <summary>
-		/// Address Line 1
+		/// Gets or sets Address Line 1.
 		/// </summary>
-		[JsonProperty("line1")]
+		[JsonPropertyName("line1")]
 		public string? Line1 { get; set; }
 
 		/// <summary>
-		/// Address Line 2
+		/// Gets or sets Address Line 2.
 		/// </summary>
-		[JsonProperty("line2")]
+		[JsonPropertyName("line2")]
 		public string? Line2 { get; set; }
 
 		/// <summary>
-		/// Address Line 3
+		/// Gets or sets Address Line 3.
 		/// </summary>
-		[JsonProperty("line3")]
+		[JsonPropertyName("line3")]
 		public string? Line3 { get; set; }
 
 		/// <summary>
-		/// City
+		/// Gets or sets City.
 		/// </summary>
-		[JsonProperty("city")]
+		[JsonPropertyName("city")]
 		public string? City { get; set; }
 
 		/// <summary>
-		/// State
+		/// Gets or sets State.
 		/// </summary>
-		[JsonProperty("state")]
+		[JsonPropertyName("state")]
 		public string? State { get; set; }
 
 		/// <summary>
-		/// Region
+		/// Gets or sets Region. Can be a State, Province, or Territory. Replaces "state" property.
 		/// </summary>
-		[JsonProperty("region")]
+		[JsonPropertyName("region")]
 		public string? Region { get; set; }
 
 		/// <summary>
-		/// Postal Code
+		/// Gets or sets Postal Code.
 		/// </summary>
-		[JsonProperty("postalCode")]
+		[JsonPropertyName("postalCode")]
 		public string? PostalCode { get; set; }
 
 		/// <summary>
-		/// Country
+		/// Gets or sets the Country. Iso3166CountryCode Type.
 		/// </summary>
-		[JsonProperty("country")]
+		[JsonPropertyName("country")]
 		public CountryCodeType Country { get; set; }
 	}
 }
