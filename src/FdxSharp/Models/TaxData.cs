@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace FdxSharp.Models
 {
 	/// <summary>
-	/// 
+	/// Tax Data, Container for tax data
 	/// </summary>
 	public class TaxData
 	{

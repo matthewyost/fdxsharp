@@ -8,9 +8,21 @@ namespace FdxSharp.Models
 	/// </summary>
 	public enum TelephoneNumberType
 	{
+		/// <summary>
+		/// Home Telephone
+		/// </summary>
 		HOME,
+		/// <summary>
+		/// Business Telephone
+		/// </summary>
 		BUSINESS,
+		/// <summary>
+		/// Cellular Telephone
+		/// </summary>
 		CELL,
+		/// <summary>
+		/// Fax
+		/// </summary>
 		FAX
 	}
 

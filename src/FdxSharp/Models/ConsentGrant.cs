@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace FdxSharp.Models;
 
 /// <summary>
-/// 
+/// Consent Grant entity, Details of consent grant
 /// </summary>
 public class ConsentGrant
 {

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace FdxSharp.Models
 {
 	/// <summary>
-	/// 
+	/// Security Detail, IRS Form 1099-B, Tax information for a single security transaction
 	/// </summary>
 	public class SecurityDetail
 	{

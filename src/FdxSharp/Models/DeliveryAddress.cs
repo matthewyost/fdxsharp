@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace FdxSharp.Models;
 
 /// <summary>
-/// 
+/// Represents a delivery address.
 /// </summary>
 public class DeliveryAddress : Address
 {
