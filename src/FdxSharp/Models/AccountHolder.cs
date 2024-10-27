@@ -8,31 +8,31 @@
 		/// <summary>
 		/// Gets or sets the first name of the account holder.
 		/// </summary>
-		[JsonProperty("firstName")]
+		[JsonPropertyName("firstName")]
 		public string FirstName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the last name of the account holder.
 		/// </summary>
-		[JsonProperty("lastName")]
+		[JsonPropertyName("lastName")]
 		public string LastName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the address of the account holder.
 		/// </summary>
-		[JsonProperty("address")]
+		[JsonPropertyName("address")]
 		public string Address { get; set; }
 
 		/// <summary>
 		/// Gets or sets the phone number of the account holder.
 		/// </summary>
-		[JsonProperty("phoneNumer")]
+		[JsonPropertyName("phoneNumer")]
 		public string PhoneNumber { get; set; }
 
 		/// <summary>
 		/// Gets or sets the email address of the account holder.
 		/// </summary>
-		[JsonProperty("email")]
+		[JsonPropertyName("email")]
 		public string Email { get; set; }
 	}
 }
