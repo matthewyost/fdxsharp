@@ -1,10 +1,11 @@
 ﻿using FdxSharp.Enums;
+using System.Text.Json.Serialization;
 
 namespace FdxSharp.Models
 {
 	/// <summary>
- 	/// Represents an Address.
-  	/// </summary>
+	/// Represents an Address.
+	/// </summary>
 	public class Address
 	{
 		/// <summary>

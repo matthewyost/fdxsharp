@@ -1,4 +1,6 @@
-﻿namespace FdxSharp.Models
+﻿using System.Text.Json.Serialization;
+
+namespace FdxSharp.Models
 {
 	/// <summary>
 	/// Represents an account holder's information.
