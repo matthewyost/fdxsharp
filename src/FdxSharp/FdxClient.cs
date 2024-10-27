@@ -15,6 +15,8 @@ namespace FdxSharp
 	/// </summary>
 	public class FdxClient : IFdxClient
 	{
+		internal const string JSON_CONTENT_TYPE = "application/json";
+
 		private readonly ILogger<FdxClient> _logger;
 		private readonly IHttpClientFactory _factory;
 		private IOptions<FdxClientOptions> _options;
@@ -68,12 +70,12 @@ namespace FdxSharp
 				using var client = _factory.CreateClient();
 				client.BaseAddress = new Uri(_options.Value.BaseUrl);
 				client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Value.AccessToken);
-				client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-				client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
+				client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JSON_CONTENT_TYPE));
+				client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", JSON_CONTENT_TYPE);
 
 				var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/tax-forms")
 				{
-					Content = JsonContent.Create<TaxDataList>(request, MediaTypeHeaderValue.Parse("application/json"))
+					Content = JsonContent.Create<TaxDataList>(request, MediaTypeHeaderValue.Parse(JSON_CONTENT_TYPE))
 				};
 
 				var responseMessage = await client.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
@@ -144,7 +146,7 @@ namespace FdxSharp
 
 				var requestMessage = new HttpRequestMessage(HttpMethod.Get, builder.ToString());
 				requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Value.AccessToken);
-				requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+				requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(JSON_CONTENT_TYPE));
 
 				using var client = _factory.CreateClient();
 				var responseMessage = await client.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
@@ -156,7 +158,7 @@ namespace FdxSharp
 						responseMessage.StatusCode == System.Net.HttpStatusCode.PartialContent)
 					{
 						// Determine what the data type is that is being returned.
-						if (responseMessage.Content.Headers.ContentType.MediaType == "application/json")
+						if (responseMessage.Content.Headers.ContentType.MediaType == JSON_CONTENT_TYPE)
 						{
 							response.ContentFormat = Enums.ContentType.JSON;
 							response.ContentAsJson = await responseMessage.Content.ReadFromJsonAsync<TaxDataList>(cancellationToken).ConfigureAwait(false);
@@ -247,7 +249,7 @@ namespace FdxSharp
 
 				var requestMessage = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
 				requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Value.AccessToken);
-				requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+				requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(JSON_CONTENT_TYPE));
 
 				using var client = _factory.CreateClient();
 				var responseMessage = await client.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
@@ -304,7 +306,7 @@ namespace FdxSharp
 				requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Value.AccessToken);
 
 				if (request.MediaType == ContentType.JSON)
-					requestMessage.Content = JsonContent.Create<TaxDataList>(request.TaxData, MediaTypeHeaderValue.Parse("application/json"));
+					requestMessage.Content = JsonContent.Create<TaxDataList>(request.TaxData, MediaTypeHeaderValue.Parse(JSON_CONTENT_TYPE));
 				else
 					requestMessage.Content = new StringContent(request.ImageAsBase64 ?? string.Empty, Encoding.UTF8, ContentTypeConverter.GetMimeType(request.MediaType));
 
