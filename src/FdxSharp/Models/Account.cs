@@ -8,25 +8,25 @@
 		/// <summary>
 		/// Gets or sets the account identifier.
 		/// </summary>
-		[JsonProperty("accountId")]
+		[JsonPropertyName("accountId")]
 		public string AccountId { get; set; }
 
 		/// <summary>
 		/// Gets or sets the type of account.
 		/// </summary>
-		[JsonProperty("accountType")]
+		[JsonPropertyName("accountType")]
 		public string AccountType { get; set; }
 
 		/// <summary>
 		/// Gets or sets the name of the account.
 		/// </summary>
-		[JsonProperty("accountName")]
+		[JsonPropertyName("accountName")]
 		public string AccountName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the balance of the account.
 		/// </summary>
-		[JsonProperty("balance")]
+		[JsonPropertyName("balance")]
 		public decimal Balance { get; set; }
 	}
 }
