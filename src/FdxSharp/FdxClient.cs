@@ -76,7 +76,7 @@ namespace FdxSharp
 					Content = JsonContent.Create<TaxDataList>(request, MediaTypeHeaderValue.Parse("application/json"))
 				};
 
-				var responseMessage = await client.SendAsync(requestMessage, cancellationToken);
+				var responseMessage = await client.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
 				CreateTaxFormResponse response = new CreateTaxFormResponse();
 				if (responseMessage.IsSuccessStatusCode)
@@ -91,7 +91,7 @@ namespace FdxSharp
 					// 206 means the document was partially created and submitted but some errors are being returned.
 					else if (responseMessage.StatusCode == System.Net.HttpStatusCode.PartialContent)
 					{
-						response = await ParsePartialSuccessAsync(responseMessage, cancellationToken);
+						response = await ParsePartialSuccessAsync<CreateTaxFormResponse>(responseMessage, cancellationToken);
 					}
 				}
 
@@ -147,7 +147,7 @@ namespace FdxSharp
 				requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
 				using var client = _factory.CreateClient();
-				var responseMessage = await client.SendAsync(requestMessage, cancellationToken);
+				var responseMessage = await client.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
 				if (responseMessage.IsSuccessStatusCode)
 				{
@@ -159,7 +159,7 @@ namespace FdxSharp
 						if (responseMessage.Content.Headers.ContentType.MediaType == "application/json")
 						{
 							response.ContentFormat = Enums.ContentType.JSON;
-							response.ContentAsJson = await responseMessage.Content.ReadFromJsonAsync<TaxDataList>(cancellationToken);
+							response.ContentAsJson = await responseMessage.Content.ReadFromJsonAsync<TaxDataList>(cancellationToken).ConfigureAwait(false);
 						}
 						else
 						{
@@ -262,8 +262,8 @@ namespace FdxSharp
 				}
 				else if (responseMessage.StatusCode == System.Net.HttpStatusCode.PartialContent)
 				{
-					//TODO:  Implement partial success parsing
-					throw new NotImplementedException();
+					var rsp = await ParsePartialSuccessAsync<SearchForTaxFormsResponse>(responseMessage, cancellationToken).ConfigureAwait(false);
+					return Result.Ok(rsp);
 				}
 				else
 				{
@@ -279,14 +279,65 @@ namespace FdxSharp
 		}
 
 		/// <inheritdoc />
-		public Task<Result<UpdateTaxFormResponse>> UpdateTaxFormAsync(UpdateTaxFormRequest request, CancellationToken cancellationToken = default)
+		public async Task<Result<UpdateTaxFormResponse>> UpdateTaxFormAsync(UpdateTaxFormRequest request, CancellationToken cancellationToken = default)
 		{
-			throw new NotImplementedException();
+			try
+			{
+				var tokenResult = await _authClient.GetTokenAsync(new OAuthClientCredentialsRequest
+				{
+					TokenUrl = _options.Value.OAuthTokenUrl,
+					ClientId = _options.Value.OAuthClientId,
+					ClientSecret = _options.Value.OAuthClientSecret,
+					Scope = _options.Value.OAuthScope
+				}, cancellationToken);
+
+				// Check for errors
+				if (tokenResult.IsFailed)
+					return Result.Fail<UpdateTaxFormResponse>(tokenResult.Errors);
+
+				if (string.IsNullOrWhiteSpace(tokenResult.Value.AccessToken))
+					return Result.Fail<UpdateTaxFormResponse>("No access token returned");
+
+				// Create the request
+				using var client = _factory.CreateClient();
+				var requestMessage = new HttpRequestMessage(HttpMethod.Put, $"/tax-forms/{request.TaxFormId}");
+				requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Value.AccessToken);
+
+				if (request.MediaType == ContentType.JSON)
+					requestMessage.Content = JsonContent.Create<TaxDataList>(request.TaxData, MediaTypeHeaderValue.Parse("application/json"));
+				else
+					requestMessage.Content = new StringContent(request.ImageAsBase64 ?? string.Empty, Encoding.UTF8, ContentTypeConverter.GetMimeType(request.MediaType));
+
+				var responseMessage = await client.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+
+				if (responseMessage.StatusCode == System.Net.HttpStatusCode.OK)
+				{
+					return Result.Ok(new UpdateTaxFormResponse());
+				}
+				else if (responseMessage.StatusCode == System.Net.HttpStatusCode.PartialContent)
+				{
+					var rsp = await ParsePartialSuccessAsync<UpdateTaxFormResponse>(responseMessage, cancellationToken).ConfigureAwait(false);
+					return Result.Ok(rsp);
+				}
+				else if (responseMessage.StatusCode == System.Net.HttpStatusCode.UnsupportedMediaType)
+				{
+					return Result.Fail<UpdateTaxFormResponse>("Unsupported media type");
+				}
+				else
+				{
+					return Result.Fail<UpdateTaxFormResponse>("Error updating tax form");
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error updating tax form: {0}", ex.Message);
+				return Result.Fail<UpdateTaxFormResponse>("Error updating tax form");
+			}
 		}
 
 		#region Private Methods
 
-		internal async Task<CreateTaxFormResponse> ParsePartialSuccessAsync(HttpResponseMessage responseMessage, CancellationToken cancellationToken)
+		internal async Task<T> ParsePartialSuccessAsync<T>(HttpResponseMessage responseMessage, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}

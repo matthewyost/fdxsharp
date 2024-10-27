@@ -8,6 +8,11 @@ namespace FdxSharp.Requests
 	public class UpdateTaxFormRequest
 	{
 		/// <summary>
+		/// The ID of the tax form to update
+		/// </summary>
+		public string? TaxFormId { get; set; }
+
+		/// <summary>
 		/// Content type of the request
 		/// </summary>
 		public ContentType MediaType { get; set; }
