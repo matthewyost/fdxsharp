@@ -1,6 +1,8 @@
 ﻿using FdxSharp.Requests;
 using FluentResults;
 using Microsoft.Extensions.Options;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FdxSharp
 {
@@ -48,6 +50,5 @@ namespace FdxSharp
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		Task<Result<UpdateTaxFormResponse>> UpdateTaxFormAsync(UpdateTaxFormRequest request, CancellationToken cancellationToken = default);
-
 	}
 }

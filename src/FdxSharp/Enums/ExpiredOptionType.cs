@@ -6,7 +6,13 @@
 	/// </summary>
 	public enum ExpiredOptionType
 	{
+		/// <summary>
+		/// Purchased
+		/// </summary>
 		PURCHASED,
+		/// <summary>
+		/// Granted
+		/// </summary>
 		GRANTED
 	}
 }

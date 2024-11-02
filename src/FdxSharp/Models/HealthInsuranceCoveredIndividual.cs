@@ -1,12 +1,14 @@
-﻿using System.Text.Json.Serialization;
-using FdxSharp.Enums;
+﻿using FdxSharp.Enums;
+using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace FdxSharp.Models
 {
-    /// <summary>
-    /// Health Insurance Covered Individual, Used on Form 1095-B Part IV and Form 1095-C Part III
-    /// </summary>
-    public class HealthInsuranceCoveredIndividual
+	/// <summary>
+	/// Health Insurance Covered Individual, Used on Form 1095-B Part IV and Form 1095-C Part III
+	/// </summary>
+	public class HealthInsuranceCoveredIndividual
 	{
 		/// <summary>
 		/// Name of responsible individual.

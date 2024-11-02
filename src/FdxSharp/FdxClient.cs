@@ -4,9 +4,20 @@ using FdxSharp.Requests;
 using FluentResults;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
+using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+
+#if NET6_0_OR_GREATER
+using System.Net.Http.Json;
+#elif NETSTANDARD2_0
+
+#endif
 
 namespace FdxSharp
 {
@@ -18,9 +29,11 @@ namespace FdxSharp
 		internal const string JSON_CONTENT_TYPE = "application/json";
 
 		private readonly ILogger<FdxClient> _logger;
-		private readonly IHttpClientFactory _factory;
 		private IOptions<FdxClientOptions> _options;
-		private IOAuthClient _authClient;
+		private readonly IOAuthClient _authClient;
+
+#if NET6_0_OR_GREATER
+		private readonly IHttpClientFactory _factory;
 
 		/// <summary>
 		/// Creates a new instance of the <see cref="FdxClient"/>
@@ -38,6 +51,22 @@ namespace FdxSharp
 			_options = options ?? throw new ArgumentNullException(nameof(options));
 			_authClient = authClient ?? throw new ArgumentNullException(nameof(authClient));
 		}
+#elif NETSTANDARD2_0
+
+		/// <summary>
+		/// Creates a new instance of the <see cref="FdxClient"/>
+		/// </summary>
+		/// <param name="logger"></param>
+		/// <param name="options"></param>
+		/// <param name="authClient"></param>
+		/// <exception cref="ArgumentNullException"></exception>
+		public FdxClient(ILogger<FdxClient> logger, IOptions<FdxClientOptions> options, IOAuthClient authClient)
+		{
+			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+			_options = options ?? throw new ArgumentNullException(nameof(options));
+			_authClient = authClient ?? throw new ArgumentNullException(nameof(authClient));
+		}
+#endif
 
 		/// <inheritdoc />
 		public IFdxClient WithOptions(IOptions<FdxClientOptions> options)
@@ -67,16 +96,24 @@ namespace FdxSharp
 					return Result.Fail<CreateTaxFormResponse>("No access token returned");
 
 				// Create the request
+#if NET6_0_OR_GREATER
 				using var client = _factory.CreateClient();
+#elif NETSTANDARD2_0
+				using var client = new HttpClient();
+#endif
 				client.BaseAddress = new Uri(_options.Value.BaseUrl);
 				client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Value.AccessToken);
 				client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JSON_CONTENT_TYPE));
 				client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", JSON_CONTENT_TYPE);
 
-				var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/tax-forms")
-				{
-					Content = JsonContent.Create<TaxDataList>(request, MediaTypeHeaderValue.Parse(JSON_CONTENT_TYPE))
-				};
+				var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/tax-forms");
+
+				// Serialize the request object to JSON (use System.Text.Json for .NET 5.0 and later)
+#if NET6_0_OR_GREATER
+				requestMessage.Content = JsonContent.Create<TaxDataList>(request, MediaTypeHeaderValue.Parse(JSON_CONTENT_TYPE));
+#elif NETSTANDARD2_0
+				requestMessage.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, JSON_CONTENT_TYPE);
+#endif
 
 				var responseMessage = await client.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
@@ -87,8 +124,14 @@ namespace FdxSharp
 					// 201 means the document was created and submitted.
 					if (responseMessage.StatusCode == System.Net.HttpStatusCode.Created)
 					{
+#if NET6_0_OR_GREATER
 						response.Content = await responseMessage.Content
 							.ReadFromJsonAsync<TaxDataList>(cancellationToken);
+#elif NETSTANDARD2_0
+
+						var json = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+						response.Content = JsonSerializer.Deserialize<TaxDataList>(json);
+#endif
 					}
 					// 206 means the document was partially created and submitted but some errors are being returned.
 					else if (responseMessage.StatusCode == System.Net.HttpStatusCode.PartialContent)
@@ -102,7 +145,7 @@ namespace FdxSharp
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error creating tax form: {0}", ex.Message);
+				_logger.LogError(ex, "Error creating tax form: {ErrorMessage}", ex.Message);
 				return Result.Fail<CreateTaxFormResponse>("Error creating tax form");
 			}
 		}
@@ -148,7 +191,11 @@ namespace FdxSharp
 				requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Value.AccessToken);
 				requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(JSON_CONTENT_TYPE));
 
+#if NET6_0_OR_GREATER
 				using var client = _factory.CreateClient();
+#elif NETSTANDARD2_0
+				using var client = new HttpClient();
+#endif
 				var responseMessage = await client.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
 				if (responseMessage.IsSuccessStatusCode)
@@ -160,20 +207,31 @@ namespace FdxSharp
 						// Determine what the data type is that is being returned.
 						if (responseMessage.Content.Headers.ContentType.MediaType == JSON_CONTENT_TYPE)
 						{
-							response.ContentFormat = Enums.ContentType.JSON;
+							response.ContentFormat = ContentType.JSON;
+#if NET6_0_OR_GREATER
 							response.ContentAsJson = await responseMessage.Content.ReadFromJsonAsync<TaxDataList>(cancellationToken).ConfigureAwait(false);
+#elif NETSTANDARD2_0
+							var json = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+							response.ContentAsJson = JsonSerializer.Deserialize<TaxDataList>(json);
+#endif
 						}
 						else
 						{
 							response.ContentFormat = responseMessage.Content.Headers.ContentType.MediaType switch
 							{
-								"image/jpeg" => Enums.ContentType.JPEG,
-								"image/png" => Enums.ContentType.PNG,
-								"image/gif" => Enums.ContentType.GIF,
-								"image/tiff" => Enums.ContentType.TIFF,
-								"application/pdf" => Enums.ContentType.PDF
+								"image/jpeg" => ContentType.JPEG,
+								"image/png" => ContentType.PNG,
+								"image/gif" => ContentType.GIF,
+								"image/tiff" => ContentType.TIFF,
+								"application/pdf" => ContentType.PDF,
+								_ => throw new NotImplementedException()
 							};
-							response.ContentAsBase64 = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
+							response.ContentAsBase64 = await responseMessage.Content
+#if NET6_0_OR_GREATER
+								.ReadAsStringAsync(cancellationToken);
+#elif NETSTANDARD2_0
+								.ReadAsStringAsync();
+#endif
 						}
 					}
 					return Result.Ok(response);
@@ -188,7 +246,7 @@ namespace FdxSharp
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error retrieving tax form: {0}", ex.Message);
+				_logger.LogError(ex, "Error retrieving tax form: {ErrorMessage}", ex.Message);
 				return Result.Fail<GetTaxFormResponse>("Error retrieving tax form");
 			}
 		}
@@ -251,15 +309,23 @@ namespace FdxSharp
 				requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Value.AccessToken);
 				requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(JSON_CONTENT_TYPE));
 
+#if NET6_0_OR_GREATER
 				using var client = _factory.CreateClient();
+#elif NETSTANDARD2_0
+				using var client = new HttpClient();
+#endif
 				var responseMessage = await client.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
 				if (responseMessage.StatusCode == System.Net.HttpStatusCode.OK)
 				{
-					var response = new SearchForTaxFormsResponse
-					{
-						Content = await responseMessage.Content.ReadFromJsonAsync<TaxDataList>(cancellationToken)
-					};
+					var response = new SearchForTaxFormsResponse();
+
+#if NET6_0_OR_GREATER
+					response.Content = await responseMessage.Content.ReadFromJsonAsync<TaxDataList>(cancellationToken);
+#elif NETSTANDARD2_0
+					var json = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+					response.Content = JsonSerializer.Deserialize<TaxDataList>(json);
+#endif
 					return Result.Ok(response);
 				}
 				else if (responseMessage.StatusCode == System.Net.HttpStatusCode.PartialContent)
@@ -275,7 +341,7 @@ namespace FdxSharp
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error retrieving tax forms: {0}", ex.Message);
+				_logger.LogError(ex, "Error retrieving tax forms: {ErrorMessage}", ex.Message);
 				return Result.Fail<SearchForTaxFormsResponse>("Error retrieving tax forms");
 			}
 		}
@@ -301,12 +367,20 @@ namespace FdxSharp
 					return Result.Fail<UpdateTaxFormResponse>("No access token returned");
 
 				// Create the request
+#if NET6_0_OR_GREATER
 				using var client = _factory.CreateClient();
+#elif NETSTANDARD2_0
+				using var client = new HttpClient();
+#endif
 				var requestMessage = new HttpRequestMessage(HttpMethod.Put, $"/tax-forms/{request.TaxFormId}");
 				requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Value.AccessToken);
 
 				if (request.MediaType == ContentType.JSON)
+#if NET6_0_OR_GREATER
 					requestMessage.Content = JsonContent.Create<TaxDataList>(request.TaxData, MediaTypeHeaderValue.Parse(JSON_CONTENT_TYPE));
+#elif NETSTANDARD2_0
+					requestMessage.Content = new StringContent(JsonSerializer.Serialize(request.TaxData), Encoding.UTF8, JSON_CONTENT_TYPE);
+#endif
 				else
 					requestMessage.Content = new StringContent(request.ImageAsBase64 ?? string.Empty, Encoding.UTF8, ContentTypeConverter.GetMimeType(request.MediaType));
 
@@ -332,7 +406,7 @@ namespace FdxSharp
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error updating tax form: {0}", ex.Message);
+				_logger.LogError(ex, "Error updating tax form: {ErrorMessage}", ex.Message);
 				return Result.Fail<UpdateTaxFormResponse>("Error updating tax form");
 			}
 		}
@@ -344,9 +418,9 @@ namespace FdxSharp
 			throw new NotImplementedException();
 		}
 
-		private StringBuilder AppendQueryString(StringBuilder builder, string key, string value)
+		private static StringBuilder AppendQueryString(StringBuilder builder, string key, string value)
 		{
-			if (builder[^1] != '?')
+			if (builder[builder.Length - 1] != '?')
 				builder.Append("&");
 			else
 				builder.Append("?");

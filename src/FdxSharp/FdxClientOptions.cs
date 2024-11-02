@@ -8,27 +8,27 @@
 		/// <summary>
 		/// URL that the client will make requests to.
 		/// </summary>
-		public required string BaseUrl { get; set; }
+		public string BaseUrl { get; set; }
 
 		/// <summary>
 		/// Client ID for OAuth2
 		/// </summary>
-		public required string OAuthClientId { get; set; }
+		public string OAuthClientId { get; set; }
 
 		/// <summary>
 		/// Client Secret for OAuth2
 		/// </summary>
-		public required string OAuthClientSecret { get; set; }
+		public string OAuthClientSecret { get; set; }
 
 		/// <summary>
 		/// URL to get an OAuth2 token
 		/// </summary>
-		public required string OAuthTokenUrl { get; set; }
+		public string OAuthTokenUrl { get; set; }
 
 		/// <summary>
 		/// OAuth2 Scope
 		/// </summary>
-		public required string OAuthScope { get; set; }
+		public string OAuthScope { get; set; }
 
 
 	}

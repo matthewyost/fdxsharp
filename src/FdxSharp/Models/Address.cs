@@ -1,6 +1,10 @@
 ﻿using FdxSharp.Enums;
 using System.Text.Json.Serialization;
 
+#if NETSTANDARD2_0
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+#endif
+
 namespace FdxSharp.Models
 {
 	/// <summary>
@@ -12,7 +16,7 @@ namespace FdxSharp.Models
 		/// Gets or sets Address Line 1.
 		/// </summary>
 		[JsonPropertyName("line1")]
-		public string? Line1 { get; set; }
+		public string Line1 { get; set; }
 
 		/// <summary>
 		/// Gets or sets Address Line 2.

@@ -1,15 +1,20 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace FdxSharp.Models;
+#if NETSTANDARD2_0
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+#endif
 
-/// <summary>
-/// Certification Metrics entity, Response object for /certification-metrics API
-/// </summary>
-public class CertificationMetrics
+namespace FdxSharp.Models
 {
 	/// <summary>
-	/// Zero or more certification performance metrics
+	/// Certification Metrics entity, Response object for /certification-metrics API
 	/// </summary>
-	[JsonPropertyName("metrics")]
-	public CertificationMetric[]? Metrics { get; set; }
+	public class CertificationMetrics
+	{
+		/// <summary>
+		/// Zero or more certification performance metrics
+		/// </summary>
+		[JsonPropertyName("metrics")]
+		public CertificationMetric[]? Metrics { get; set; }
+	}
 }

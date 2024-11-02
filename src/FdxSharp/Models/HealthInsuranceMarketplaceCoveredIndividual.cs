@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
 
 namespace FdxSharp.Models
 {
@@ -35,6 +36,6 @@ namespace FdxSharp.Models
 		/// Coverage termination date.
 		/// </summary>
 		[JsonPropertyName("policyTerminationDate")]
-		public DateTime PolicyTerminationDate { get; set; }
+		public DateTime? PolicyTerminationDate { get; set; }
 	}
 }

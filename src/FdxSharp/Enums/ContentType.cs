@@ -1,4 +1,6 @@
-﻿namespace FdxSharp.Enums
+﻿using System;
+
+namespace FdxSharp.Enums
 {
 	/// <summary>
 	/// Title: Content Types
@@ -6,11 +8,29 @@
 	/// </summary>
 	public enum ContentType
 	{
+		/// <summary>
+		/// application/pdf
+		/// </summary>
 		PDF,
+		/// <summary>
+		/// image/gif
+		/// </summary>
 		GIF,
+		/// <summary>
+		/// image/jpeg
+		/// </summary>
 		JPEG,
+		/// <summary>
+		/// image/tiff
+		/// </summary>
 		TIFF,
+		/// <summary>
+		/// image/png
+		/// </summary>
 		PNG,
+		/// <summary>
+		/// application/json
+		/// </summary>
 		JSON
 	}
 

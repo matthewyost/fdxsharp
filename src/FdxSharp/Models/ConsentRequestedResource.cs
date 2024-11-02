@@ -1,22 +1,27 @@
 ﻿using FdxSharp.Enums;
 using System.Text.Json.Serialization;
 
-namespace FdxSharp.Models;
+#if NETSTANDARD2_0
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+#endif
 
-/// <summary>
-/// Consent Requested Resource entity, Details of requested resource and data clusters
-/// </summary>
-public class ConsentRequestedResource
+namespace FdxSharp.Models
 {
 	/// <summary>
-	/// Type of resource permission requested
+	/// Consent Requested Resource entity, Details of requested resource and data clusters
 	/// </summary>
-	[JsonPropertyName("resourceType")]
-	public ConsentResourceType? ResourceType { get; set; }
+	public class ConsentRequestedResource
+	{
+		/// <summary>
+		/// Type of resource permission requested
+		/// </summary>
+		[JsonPropertyName("resourceType")]
+		public ConsentResourceType? ResourceType { get; set; }
 
-	/// <summary>
-	/// Name of clusters of data elements requested.
-	/// </summary>
-	[JsonPropertyName("dataClusters")]
-	public DataClusterType[]? DataClusters { get; set; }
+		/// <summary>
+		/// Name of clusters of data elements requested.
+		/// </summary>
+		[JsonPropertyName("dataClusters")]
+		public DataClusterType[]? DataClusters { get; set; }
+	}
 }
