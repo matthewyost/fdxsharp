@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
 
 namespace FdxSharp.Models
 {
@@ -17,6 +18,6 @@ namespace FdxSharp.Models
 		/// Date of birth.
 		/// </summary>
 		[JsonPropertyName("dateOfBirth")]
-		public DateOnly DateOfBirth { get; set; }
+		public DateTime DateOfBirth { get; set; }
 	}
 }

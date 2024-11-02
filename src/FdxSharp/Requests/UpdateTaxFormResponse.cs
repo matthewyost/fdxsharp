@@ -1,5 +1,9 @@
 ﻿using FdxSharp.Models;
 
+#if NETSTANDARD2_0
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+#endif
+
 namespace FdxSharp.Requests
 {
 	/// <summary>

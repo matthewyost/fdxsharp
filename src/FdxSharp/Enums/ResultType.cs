@@ -1,5 +1,9 @@
-﻿namespace FdxSharp.Enums;
-
-public enum ResultType
+﻿namespace FdxSharp.Enums
 {
+	/// <summary>
+	/// Result Type
+	/// </summary>
+	public enum ResultType
+	{
+	}
 }

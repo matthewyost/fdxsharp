@@ -6,7 +6,13 @@
 	/// </summary>
 	public enum SaleProceedsType
 	{
+		/// <summary>
+		/// Gross Sales
+		/// </summary>
 		GROSS,
+		/// <summary>
+		/// Net Sales
+		/// </summary>
 		NET
 	}
 }

@@ -1,10 +1,11 @@
 ﻿using FdxSharp.Enums;
+using System;
 using System.Text.Json.Serialization;
 
 namespace FdxSharp.Models
 {
 	/// <summary>
-	/// 
+	/// Security Detail
 	/// </summary>
 	public class SecurityDetail
 	{

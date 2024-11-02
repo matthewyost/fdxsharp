@@ -1,5 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 
+#if NETSTANDARD2_0
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+#endif
+
 namespace FdxSharp.Models
 {
 	/// <summary>
@@ -11,13 +15,13 @@ namespace FdxSharp.Models
 		/// First name.
 		/// </summary>
 		[JsonPropertyName("first")]
-		public string First { get; set; }
+		public string? First { get; set; }
 
 		/// <summary>
 		/// Middle initial.
 		/// </summary>
 		[JsonPropertyName("middle")]
-		public string Middle { get; set; }
+		public string? Middle { get; set; }
 
 		/// <summary>
 		/// Last name.
@@ -29,6 +33,6 @@ namespace FdxSharp.Models
 		/// Generational or academic suffix.
 		/// </summary>
 		[JsonPropertyName("suffix")]
-		public string Suffix { get; set; }
+		public string? Suffix { get; set; }
 	}
 }

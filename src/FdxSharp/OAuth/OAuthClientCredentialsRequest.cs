@@ -1,4 +1,8 @@
-﻿namespace FdxSharp.OAuth
+﻿#if NETSTANDARD2_0
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+#endif
+
+namespace FdxSharp.OAuth
 {
 	/// <summary>
 	/// Request for an OAuth token using client credentials
@@ -8,7 +12,7 @@
 		/// <summary>
 		/// URL to retrieve token from
 		/// </summary>
-		public required string TokenUrl { get; set; }
+		public string TokenUrl { get; set; }
 
 		/// <summary>
 		/// Client Id

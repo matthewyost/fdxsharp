@@ -1,5 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 
+#if NETSTANDARD2_0
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+#endif
+
 namespace FdxSharp.Models
 {
 	/// <summary>
@@ -8,9 +12,21 @@ namespace FdxSharp.Models
 	/// </summary>
 	public enum TelephoneNumberType
 	{
+		/// <summary>
+		/// Home
+		/// </summary>
 		HOME,
+		/// <summary>
+		/// Business
+		/// </summary>
 		BUSINESS,
+		/// <summary>
+		/// Cell / Mobile 
+		/// </summary>
 		CELL,
+		/// <summary>
+		/// Fax Number
+		/// </summary>
 		FAX
 	}
 
@@ -29,7 +45,7 @@ namespace FdxSharp.Models
 		/// Country calling codes defined by ITU-T recommendations E.123 and E.164.
 		/// </summary>
 		[JsonPropertyName("country")]
-		public string Country { get; set; }
+		public string? Country { get; set; }
 
 		/// <summary>
 		/// Telephone subscriber number defined by ITU-T recommendation E.164.
@@ -47,6 +63,6 @@ namespace FdxSharp.Models
 		/// An arbitrary length telephone number extension
 		/// </summary>
 		[JsonPropertyName("extension")]
-		public string Extension { get; set; }
+		public string? Extension { get; set; }
 	}
 }

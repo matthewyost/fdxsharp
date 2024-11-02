@@ -5,6 +5,10 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FdxSharp", "src\FdxSharp\FdxSharp.csproj", "{6EAF9402-873A-49AC-B109-BB7FED7A553B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B4D8F7E7-4032-4FC8-B62A-B2ECFD5F0E69}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FdxSharp.Tests", "tests\FdxSharp.Tests\FdxSharp.Tests.csproj", "{C26B1B09-0BF7-4722-9250-E56BB458965F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +19,16 @@ Global
 		{6EAF9402-873A-49AC-B109-BB7FED7A553B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EAF9402-873A-49AC-B109-BB7FED7A553B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EAF9402-873A-49AC-B109-BB7FED7A553B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C26B1B09-0BF7-4722-9250-E56BB458965F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C26B1B09-0BF7-4722-9250-E56BB458965F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C26B1B09-0BF7-4722-9250-E56BB458965F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C26B1B09-0BF7-4722-9250-E56BB458965F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C26B1B09-0BF7-4722-9250-E56BB458965F} = {B4D8F7E7-4032-4FC8-B62A-B2ECFD5F0E69}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EAE45561-0220-41D8-9FDF-113F6FBF01AE}

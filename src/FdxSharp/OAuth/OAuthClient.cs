@@ -1,7 +1,13 @@
 ﻿using FluentResults;
 using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+#if NET6_0_OR_GREATER
 using System.Net.Http.Json;
-
+#endif
 namespace FdxSharp.OAuth
 {
 	/// <summary>
@@ -58,7 +64,8 @@ namespace FdxSharp.OAuth
 					return Result.Fail<OAuthTokenResponse>("Failed to retrieve OAuth token");
 				}
 
-				var oauthResponse = await response.Content.ReadFromJsonAsync<OAuthTokenResponse>(cancellationToken: cancellationToken);
+				var responseContent = await response.Content.ReadAsStringAsync();
+				var oauthResponse = System.Text.Json.JsonSerializer.Deserialize<OAuthTokenResponse>(responseContent);
 
 				_cache.Set(request.ClientId, oauthResponse, TimeSpan.FromSeconds(oauthResponse.ExpiresIn ?? 0));
 

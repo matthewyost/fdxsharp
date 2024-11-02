@@ -11,11 +11,11 @@ public class TaxDataForQR : TaxData
 	/// [Financial Data Exchange (FDX)](https://financialdataexchange.org/) schema version number (e.g. "V5.0").
 	/// </summary>
 	[JsonPropertyName("version")]
-	public string? Version { get; set; }
+	public string Version { get; set; }
 
 	/// <summary>
 	/// The FDX registration ID of company or software generating this tax data
 	/// </summary>
 	[JsonPropertyName("softwareId")]
-	public string? SoftwareId { get; set; }
+	public string SoftwareId { get; set; }
 }
