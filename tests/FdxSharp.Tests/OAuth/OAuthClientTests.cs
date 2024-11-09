@@ -1,5 +1,5 @@
 ﻿using AutoFixture;
-using FdxSharp.OAuth;
+using FdxSharp.Auth;
 using FdxSharp.Tests.Utilities;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace FdxSharp.Tests.OAuth
@@ -36,7 +37,7 @@ namespace FdxSharp.Tests.OAuth
 			_factory.Func = func;
 
 			// Act
-			var result = await _client.GetTokenAsync(_fixture.Create<OAuthClientCredentialsRequest>());
+			var result = await _client.GetTokenAsync(_fixture.Create<CredentialsRequest>());
 
 			// Assert
 			result.IsSuccess.Should().BeTrue();
@@ -46,18 +47,19 @@ namespace FdxSharp.Tests.OAuth
 		public async Task GetTokenAsync_WhenCalled_CachesToken()
 		{
 			// Arrange
-			var request = _fixture.Create<OAuthClientCredentialsRequest>();
+			var request = _fixture.Create<CredentialsRequest>();
 			var cacheValue = _fixture.Create<OAuthTokenResponse>();
 
 			MemoryCache _cache = new(new MemoryCacheOptions());
 			_cache.Set(request.ClientId, cacheValue);
+			_cache.Get(request.ClientId);
 			_client = new OAuthClient(_factory, _cache);
 
 			Func<HttpRequestMessage, HttpResponseMessage> func = (request) =>
 			{
 				return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
 				{
-					Content = new StringContent("{\"access_token\":\"token\",\"token_type\":\"bearer\",\"expires_in\":3600}")
+					Content = new StringContent(JsonSerializer.Serialize(cacheValue))
 				};
 			};
 			_factory.Func = func;
@@ -68,14 +70,14 @@ namespace FdxSharp.Tests.OAuth
 			// Assert
 			using var scope = new AssertionScope();
 			result.IsSuccess.Should().BeTrue();
-			result.ValueOrDefault.Should().Be(cacheValue);
+			result.Value.Should().Be(cacheValue);
 		}
 
 		[Fact]
 		public async Task GetTokenAsync_WhenCalled_ReturnsError()
 		{
 			// Arrange
-			var request = _fixture.Create<OAuthClientCredentialsRequest>();
+			var request = _fixture.Create<CredentialsRequest>();
 			var cacheValue = _fixture.Create<string>();
 
 			MemoryCache _cache = new(new MemoryCacheOptions());

@@ -8,11 +8,16 @@ using System.Threading.Tasks;
 #if NET6_0_OR_GREATER
 using System.Net.Http.Json;
 #endif
-namespace FdxSharp.OAuth
+
+#if NETSTANDARD2_0
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+#endif
+
+namespace FdxSharp.Auth
 {
 	/// <summary>
 	/// Base implementation of an OAuth client that leverages the
-	/// <see cref="OAuthClientCredentialsRequest"/> to retrieve an OAuth token.
+	/// <see cref="CredentialsRequest"/> to retrieve an OAuth token.
 	/// </summary>
 	public sealed class OAuthClient : IOAuthClient
 	{
@@ -32,19 +37,19 @@ namespace FdxSharp.OAuth
 		}
 
 		/// <inheritdoc />
-		public async Task<Result<OAuthTokenResponse>> GetTokenAsync(OAuthClientCredentialsRequest request, CancellationToken cancellationToken = default)
+		public async Task<Result<OAuthTokenResponse>> GetTokenAsync(CredentialsRequest request, CancellationToken cancellationToken = default)
 		{
 			try
 			{
 				// Check the cache for the token
 				if (_cache.TryGetValue<OAuthTokenResponse>(request.ClientId, out var cachedToken))
 				{
-					return Result.Ok(cachedToken);
+					return Result.Ok(cachedToken!);
 				}
 
 				using var client = _factory.CreateClient();
 
-				var requestMessage = new HttpRequestMessage(HttpMethod.Post, request.TokenUrl)
+				var requestMessage = new HttpRequestMessage(HttpMethod.Post, request.AuthenticationUrl)
 				{
 					Content = new FormUrlEncodedContent(new[]
 					{
@@ -67,7 +72,7 @@ namespace FdxSharp.OAuth
 				var responseContent = await response.Content.ReadAsStringAsync();
 				var oauthResponse = System.Text.Json.JsonSerializer.Deserialize<OAuthTokenResponse>(responseContent);
 
-				_cache.Set(request.ClientId, oauthResponse, TimeSpan.FromSeconds(oauthResponse.ExpiresIn ?? 0));
+				_cache.Set(request.AuthenticationFields, oauthResponse, TimeSpan.FromSeconds(oauthResponse.ExpiresIn ?? 0));
 
 				return Result.Ok(oauthResponse);
 			}

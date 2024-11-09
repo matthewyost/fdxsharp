@@ -4,7 +4,7 @@
 #pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
 #endif
 
-namespace FdxSharp.OAuth
+namespace FdxSharp.Auth
 {
 	/// <summary>
 	/// Response for an OAuth token request

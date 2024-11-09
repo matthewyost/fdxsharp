@@ -1,6 +1,7 @@
-﻿using FdxSharp.Enums;
-using FdxSharp.OAuth;
+﻿using FdxSharp.Auth;
+using FdxSharp.Enums;
 using FdxSharp.Requests;
+using FdxSharp.Settings;
 using FluentResults;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -12,6 +13,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+
 
 #if NET6_0_OR_GREATER
 using System.Net.Http.Json;
@@ -80,13 +82,7 @@ namespace FdxSharp
 		{
 			try
 			{
-				var tokenResult = await _authClient.GetTokenAsync(new OAuthClientCredentialsRequest
-				{
-					TokenUrl = _options.Value.OAuthTokenUrl,
-					ClientId = _options.Value.OAuthClientId,
-					ClientSecret = _options.Value.OAuthClientSecret,
-					Scope = _options.Value.OAuthScope
-				}, cancellationToken);
+				var tokenResult = await _authClient.GetTokenAsync(GetCredentialRequest(_options), cancellationToken);
 
 				// Check for errors
 				if (tokenResult.IsFailed)
@@ -106,14 +102,12 @@ namespace FdxSharp
 				client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JSON_CONTENT_TYPE));
 				client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", JSON_CONTENT_TYPE);
 
-				var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/tax-forms");
+				var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/tax-forms")
+				{
+					// Serialize the request object to JSON (use System.Text.Json for .NET 5.0 and later)
+					Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, JSON_CONTENT_TYPE)
+				};
 
-				// Serialize the request object to JSON (use System.Text.Json for .NET 5.0 and later)
-#if NET6_0_OR_GREATER
-				requestMessage.Content = JsonContent.Create<TaxDataList>(request, MediaTypeHeaderValue.Parse(JSON_CONTENT_TYPE));
-#elif NETSTANDARD2_0
-				requestMessage.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, JSON_CONTENT_TYPE);
-#endif
 
 				var responseMessage = await client.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
@@ -124,14 +118,8 @@ namespace FdxSharp
 					// 201 means the document was created and submitted.
 					if (responseMessage.StatusCode == System.Net.HttpStatusCode.Created)
 					{
-#if NET6_0_OR_GREATER
-						response.Content = await responseMessage.Content
-							.ReadFromJsonAsync<TaxDataList>(cancellationToken);
-#elif NETSTANDARD2_0
-
 						var json = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
 						response.Content = JsonSerializer.Deserialize<TaxDataList>(json);
-#endif
 					}
 					// 206 means the document was partially created and submitted but some errors are being returned.
 					else if (responseMessage.StatusCode == System.Net.HttpStatusCode.PartialContent)
@@ -155,13 +143,7 @@ namespace FdxSharp
 		{
 			try
 			{
-				var tokenResult = await _authClient.GetTokenAsync(new OAuthClientCredentialsRequest
-				{
-					TokenUrl = _options.Value.OAuthTokenUrl,
-					ClientId = _options.Value.OAuthClientId,
-					ClientSecret = _options.Value.OAuthClientSecret,
-					Scope = _options.Value.OAuthScope
-				}, cancellationToken);
+				var tokenResult = await _authClient.GetTokenAsync(GetCredentialRequest(_options), cancellationToken);
 
 				// Check for errors
 				if (tokenResult.IsFailed)
@@ -174,18 +156,14 @@ namespace FdxSharp
 				StringBuilder builder = new();
 				builder.Append($"/tax-forms/{request.TaxFormId}");
 
-				if (!string.IsNullOrWhiteSpace(request.AccountId) || !string.IsNullOrWhiteSpace(request.Offset) ||
-					request.Limit is not null)
-					builder.Append("?");
-
 				if (!string.IsNullOrWhiteSpace(request.AccountId))
-					builder.Append($"accountId={request.AccountId}");
+					AppendQueryString(builder, "accountId", request.AccountId);
 
 				if (!string.IsNullOrWhiteSpace(request.Offset))
-					builder.Append($"&offset={request.Offset}");
+					AppendQueryString(builder, "offset", request.Offset);
 
 				if (request.Limit is not null)
-					builder.Append($"&limit={request.Limit}");
+					AppendQueryString(builder, "limit", request.Limit.ToString());
 
 				var requestMessage = new HttpRequestMessage(HttpMethod.Get, builder.ToString());
 				requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Value.AccessToken);
@@ -208,12 +186,8 @@ namespace FdxSharp
 						if (responseMessage.Content.Headers.ContentType.MediaType == JSON_CONTENT_TYPE)
 						{
 							response.ContentFormat = ContentType.JSON;
-#if NET6_0_OR_GREATER
-							response.ContentAsJson = await responseMessage.Content.ReadFromJsonAsync<TaxDataList>(cancellationToken).ConfigureAwait(false);
-#elif NETSTANDARD2_0
 							var json = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
 							response.ContentAsJson = JsonSerializer.Deserialize<TaxDataList>(json);
-#endif
 						}
 						else
 						{
@@ -226,12 +200,7 @@ namespace FdxSharp
 								"application/pdf" => ContentType.PDF,
 								_ => throw new NotImplementedException()
 							};
-							response.ContentAsBase64 = await responseMessage.Content
-#if NET6_0_OR_GREATER
-								.ReadAsStringAsync(cancellationToken);
-#elif NETSTANDARD2_0
-								.ReadAsStringAsync();
-#endif
+							response.ContentAsBase64 = await responseMessage.Content.ReadAsStringAsync();
 						}
 					}
 					return Result.Ok(response);
@@ -256,13 +225,7 @@ namespace FdxSharp
 		{
 			try
 			{
-				var tokenResult = await _authClient.GetTokenAsync(new OAuthClientCredentialsRequest
-				{
-					TokenUrl = _options.Value.OAuthTokenUrl,
-					ClientId = _options.Value.OAuthClientId,
-					ClientSecret = _options.Value.OAuthClientSecret,
-					Scope = _options.Value.OAuthScope
-				}, cancellationToken);
+				var tokenResult = await _authClient.GetTokenAsync(GetCredentialRequest(_options), cancellationToken);
 
 				// Check for errors
 				if (tokenResult.IsFailed)
@@ -320,12 +283,8 @@ namespace FdxSharp
 				{
 					var response = new SearchForTaxFormsResponse();
 
-#if NET6_0_OR_GREATER
-					response.Content = await responseMessage.Content.ReadFromJsonAsync<TaxDataList>(cancellationToken);
-#elif NETSTANDARD2_0
 					var json = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
 					response.Content = JsonSerializer.Deserialize<TaxDataList>(json);
-#endif
 					return Result.Ok(response);
 				}
 				else if (responseMessage.StatusCode == System.Net.HttpStatusCode.PartialContent)
@@ -351,13 +310,7 @@ namespace FdxSharp
 		{
 			try
 			{
-				var tokenResult = await _authClient.GetTokenAsync(new OAuthClientCredentialsRequest
-				{
-					TokenUrl = _options.Value.OAuthTokenUrl,
-					ClientId = _options.Value.OAuthClientId,
-					ClientSecret = _options.Value.OAuthClientSecret,
-					Scope = _options.Value.OAuthScope
-				}, cancellationToken);
+				var tokenResult = await _authClient.GetTokenAsync(GetCredentialRequest(_options), cancellationToken);
 
 				// Check for errors
 				if (tokenResult.IsFailed)
@@ -376,11 +329,7 @@ namespace FdxSharp
 				requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.Value.AccessToken);
 
 				if (request.MediaType == ContentType.JSON)
-#if NET6_0_OR_GREATER
-					requestMessage.Content = JsonContent.Create<TaxDataList>(request.TaxData, MediaTypeHeaderValue.Parse(JSON_CONTENT_TYPE));
-#elif NETSTANDARD2_0
 					requestMessage.Content = new StringContent(JsonSerializer.Serialize(request.TaxData), Encoding.UTF8, JSON_CONTENT_TYPE);
-#endif
 				else
 					requestMessage.Content = new StringContent(request.ImageAsBase64 ?? string.Empty, Encoding.UTF8, ContentTypeConverter.GetMimeType(request.MediaType));
 
@@ -427,6 +376,17 @@ namespace FdxSharp
 
 			builder.Append($"{key}={value}");
 			return builder;
+		}
+
+		private static CredentialsRequest GetCredentialRequest(IOptions<FdxClientOptions> options)
+		{
+			return new CredentialsRequest
+			{
+				AuthenticationUrl = options.Value.OAuth.TokenUrl,
+				ClientId = options.Value.OAuth.ClientId,
+				ClientSecret = options.Value.OAuth.ClientSecret,
+				Scope = options.Value.OAuth.Scope
+			};
 		}
 
 		#endregion

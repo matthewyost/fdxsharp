@@ -1,4 +1,5 @@
 ﻿using FdxSharp.Requests;
+using FdxSharp.Settings;
 using FluentResults;
 using Microsoft.Extensions.Options;
 using System.Threading;
@@ -6,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace FdxSharp
 {
-	/// <summary>
-	/// Interface for working with an FDX server
-	/// </summary>
-	public interface IFdxClient
+    /// <summary>
+    /// Interface for working with an FDX server
+    /// </summary>
+    public interface IFdxClient
 	{
 		/// <summary>
 		/// Allows the setting of options specifically for an FdxClient
